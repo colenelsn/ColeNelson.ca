@@ -418,6 +418,7 @@
       item.className = 'project-list-item' + (i === 0 ? ' active' : '');
       item.innerHTML = `<span class="list-num">${p.num}</span><span class="list-title">${p.title}</span>`;
       item.addEventListener('mouseenter', () => setActive(i));
+      item.addEventListener('click', () => setActive(i));
       listEl.appendChild(item);
     });
 
