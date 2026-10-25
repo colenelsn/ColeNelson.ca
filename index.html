@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cole Nelson — Cinematographer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000000;
+      --text-header: #FFFFFF;
+      --text-sub: #B3B3B3;
+      --font: Arial, Helvetica, sans-serif;
+      --hero-w: 42rem;
+      --col-gap: 2.25rem;
+      /* Fluid root size: everything below is in rem, so the whole layout
+         scales with viewport width (e.g. going browser-fullscreen on a
+         bigger display) instead of just gaining empty margin. */
+      font-size: clamp(14px, 0.75vw + 6px, 22px);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-header);
+      font-family: var(--font);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Film grain ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.045;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' fill='white' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+      animation: grain 0.4s steps(1) infinite;
+    }
+    @keyframes grain {
+      0%   { background-position: 0 0; }
+      10%  { background-position: -5% -10%; }
+      20%  { background-position: -15% 5%; }
+      30%  { background-position: 7% -25%; }
+      40%  { background-position: -5% 25%; }
+      50%  { background-position: -15% 10%; }
+      60%  { background-position: 15% 0%; }
+      70%  { background-position: 0 15%; }
+      80%  { background-position: 3% 35%; }
+      90%  { background-position: -10% 10%; }
+      100% { background-position: 0 0; }
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 1.75rem 3rem;
+    }
+    .nav-name {
+      font-size: 0.6875rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-header);
+      text-shadow: 0 0 1.125rem rgba(255,255,255,0.18);
+      cursor: pointer;
+    }
+    .nav-links { display: flex; flex-direction: column; gap: 0.35rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.5625rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      background: linear-gradient(180deg, var(--text-sub), rgba(179,179,179,0.35));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      opacity: 0.7;
+      transition: opacity 0.25s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: linear-gradient(180deg, var(--text-header), var(--text-sub));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      opacity: 1;
+    }
+
+    /* ══════════════════════════════
+       PORTFOLIO — title row above a single centered hero
+    ══════════════════════════════ */
+    #page-portfolio {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 0 3rem;
+    }
+
+    .hero-block { width: var(--hero-w); }
+
+    .project-list {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem 1.5rem;
+      width: var(--hero-w);
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+    }
+    .project-list-item {
+      text-align: left;
+      padding: 0.6875rem 0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.125rem;
+      opacity: 0.35;
+      transition: opacity 0.22s;
+    }
+    .project-list-item:hover, .project-list-item.active { opacity: 1; }
+    .list-num { font-size: 0.4375rem; letter-spacing: 0.22em; color: var(--text-sub); line-height: 1; }
+    .list-title {
+      font-size: 0.5rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-header);
+      text-shadow: 0 0 0.75rem rgba(255,255,255,0.1);
+      line-height: 1.4;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    /* ── Hero window ── */
+    .media-window {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #1a1a1a;
+      cursor: pointer;
+    }
+    .hero-thumb, .hero-video {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .hero-thumb { transition: opacity 0.35s ease; }
+    .hero-video { opacity: 0; transition: opacity 0.35s ease; }
+    .media-window.playing .hero-thumb { opacity: 0; }
+    .media-window.playing .hero-video { opacity: 1; }
+    .media-window::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.35) 100%);
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .media-window.playing::before { opacity: 1; }
+
+    /* ── Hero info (credits) ── */
+    .hero-info { margin-top: 1.25rem; }
+    .hero-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .hero-num { font-size: 0.5625rem; letter-spacing: 0.2em; color: var(--text-sub); opacity: 0.6; }
+    .hero-title {
+      font-size: 0.8125rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      color: var(--text-header);
+      text-shadow: 0 0 1rem rgba(255,255,255,0.12);
+    }
+    .hero-credits {
+      display: grid;
+      grid-template-columns: 8.125rem 1fr;
+      gap: 0.1875rem 0;
+    }
+    .credit-label {
+      font-size: 0.53125rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+      opacity: 0.55;
+      padding-top: 0.0625rem;
+    }
+    .credit-value { font-size: 0.53125rem; letter-spacing: 0.08em; color: var(--text-sub); line-height: 1.7; }
+    .hero-year { font-size: 0.53125rem; letter-spacing: 0.18em; color: var(--text-sub); opacity: 0.45; margin-top: 0.625rem; }
+
+    /* ── Contact footer: Email / Location, its own full-page section below ── */
+    .contact-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 0 3rem;
+    }
+
+    .about-center {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3rem;
+    }
+    .contact-item {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .contact-label {
+      font-size: 0.5rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+      opacity: 0.5;
+      line-height: 1;
+    }
+    .contact-value {
+      font-size: 0.5625rem;
+      letter-spacing: 0.1em;
+      color: var(--text-header);
+      text-decoration: none;
+      text-shadow: 0 0 0.75rem rgba(255,255,255,0.1);
+      text-align: center;
+      line-height: 1.5;
+      transition: opacity 0.2s;
+    }
+    .contact-value:hover { opacity: 0.5; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8,8,8,0.9);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-inner { position: relative; width: 88vw; max-width: 68.75rem; }
+    .modal-close {
+      position: absolute;
+      top: -2.125rem; right: 0;
+      background: none; border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.625rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: color 0.2s;
+    }
+    .modal-close:hover { color: rgba(255,255,255,0.9); }
+    .embed-wrap { padding: 56.25% 0 0; position: relative; background: #000; }
+    .embed-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      nav { padding: 1.375rem 1.5rem; }
+      #page-portfolio { padding: 0 1.5rem; }
+      .project-list { width: 100%; gap: 0.5rem 1.25rem; }
+      .hero-block { width: 100%; }
+      .contact-footer { padding: 0 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <span class="nav-name" onclick="window.scrollTo({top:0,behavior:'smooth'})">Cole Nelson</span>
+    <ul class="nav-links">
+      <li><a class="active" onclick="window.scrollTo({top:0,behavior:'smooth'})">Portfolio</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══ PORTFOLIO ══ -->
+  <section id="page-portfolio">
+
+    <div class="project-list" id="project-list"></div>
+
+    <div class="hero-block">
+      <div class="media-window" id="media-window">
+        <img id="hero-thumb" class="hero-thumb" src="" alt="">
+        <video id="hero-video" class="hero-video" muted loop playsinline preload="none"></video>
+      </div>
+      <div id="hero-info" class="hero-info"></div>
+    </div>
+
+  </section>
+
+  <!-- ══ CONTACT ══ -->
+  <section class="contact-footer">
+    <div class="about-center">
+      <div class="contact-item">
+        <span class="contact-label">Email</span>
+        <a class="contact-value" href="mailto:cole@huntcinema.com">cole@huntcinema.com</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Location</span>
+        <span class="contact-value">Whistler, B.C.<br>Available worldwide</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MODAL ══ -->
+  <div class="modal-overlay" id="modal" onclick="handleModalClick(event)">
+    <div class="modal-inner">
+      <button class="modal-close" onclick="closeModal()">Close ✕</button>
+      <div class="embed-wrap" id="embed-wrap"></div>
+    </div>
+  </div>
+
+  <script>
+    const BASE = '01_MEDIA/01_PORTFOLIO/';
+    const NOW  = BASE + '01_%E6%AD%A4%E5%88%BBNOW/';
+
+    const PROJECTS = [
+      {
+        num: '01',
+        title: '此刻 : NOW',
+        thumb: NOW + '2503_NLSN_NOW.jpg',
+        preview: NOW + '250821_WEIS25_TRAILER_V01_HSJ.mp4',
+        embedSrc: 'https://player.vimeo.com/video/1142132703?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1',
+        credits: [
+          ['Client', 'WeiTien Ho'],
+          ['Directed by', 'Hugh Saint-Jacques & Cole Nelson'],
+          ['Cinematography', 'Cole Nelson & Hugh Saint-Jacques'],
+          ['Edited', 'Hugh Saint-Jacques'],
+          ['Title Design', 'Sara Elder'],
+          ['Supported by', 'Whistler Blackcomb, Peak Performance, Tourism Whistler'],
+        ],
+        year: '2025'
+      },
+      {
+        num: '02',
+        title: 'INVESTED TIME',
+        thumb: BASE + '05_INVESTED%20TIME/FILM%20THUMBNAIL_01_00_50_14.jpg',
+        preview: BASE + '05_INVESTED%20TIME/260507_TRAILER_v.2.mov',
+        embedSrc: 'https://www.youtube.com/embed/dhOiWQXcchg?si=oPyH0QKHeuZpIJmT&autoplay=1',
+        credits: [
+          ['Directed by', 'Cole Nelson'],
+          ['Cinematography', 'Cole Nelson'],
+          ['Additional', 'Forrest Riesco, Liam Morgan, Aedan Skinner, Matt Miles'],
+          ['Edited', 'Cole Nelson'],
+          ['Sound Design', 'Cole Nelson'],
+          ['Colour', 'Cole Nelson'],
+        ],
+        year: '2026'
+      },
+      {
+        num: '03',
+        title: 'TRIAD',
+        thumb: BASE + '02_TRIAD/Commencal_Triad_46.png',
+        preview: BASE + '02_TRIAD/260508_TRIAD_10s.mov',
+        embedSrc: 'https://www.youtube.com/embed/DlonRYeNKy8?si=jGFl4NH_K_Aa3rzx&autoplay=1',
+        credits: [
+          ['Client', 'COMMENCAL BIKES & SKIS'],
+          ['Directed by', 'Cole Nelson & Hugh Saint-Jacques'],
+          ['Cinematography', 'Cole Nelson & Hugh Saint-Jacques'],
+          ['Edited', 'Thomas Bourget'],
+          ['Sound Design', 'Thomas Bourget'],
+          ['Colour', 'Cole Nelson'],
+        ],
+        year: '2024'
+      },
+      {
+        num: '04',
+        title: 'DO GOOD DESIGNS',
+        thumb: BASE + '03_DOGOODDESIGNS/CN_DesignsbyDuguid_Still_2.png',
+        preview: BASE + '03_DOGOODDESIGNS/260508_DOGOODDESIGNS_12s.mov',
+        embedSrc: 'https://player.vimeo.com/video/1021805227?h=ca1f78ea38&autoplay=1',
+        credits: [
+          ['Client', 'DO GOOD DESIGNS'],
+          ['Directed by', 'Cole Nelson'],
+          ['Cinematography', 'Cole Nelson'],
+          ['Edited', 'Cole Nelson'],
+          ['Sound Design', 'Cole Nelson'],
+          ['Colour', 'Cole Nelson'],
+        ],
+        year: '2024'
+      }
+    ];
+
+    // ── Build sidebar list ──
+    const listEl = document.getElementById('project-list');
+    PROJECTS.forEach((p, i) => {
+      const item = document.createElement('div');
+      item.className = 'project-list-item' + (i === 0 ? ' active' : '');
+      item.innerHTML = `<span class="list-num">${p.num}</span><span class="list-title">${p.title}</span>`;
+      item.addEventListener('mouseenter', () => setActive(i));
+      listEl.appendChild(item);
+    });
+
+    // ── Hover video ──
+    const mediaWindow = document.getElementById('media-window');
+    const heroThumb   = document.getElementById('hero-thumb');
+    const heroVideo   = document.getElementById('hero-video');
+    let isHoveringMedia = false;
+
+    mediaWindow.addEventListener('mouseenter', () => {
+      isHoveringMedia = true;
+      const p = PROJECTS[currentIndex];
+      if (!p.preview) return;
+      heroVideo.load();
+      heroVideo.play().catch(() => {});
+      mediaWindow.classList.add('playing');
+    });
+    mediaWindow.addEventListener('mouseleave', () => {
+      isHoveringMedia = false;
+      heroVideo.pause();
+      heroVideo.currentTime = 0;
+      mediaWindow.classList.remove('playing');
+    });
+    mediaWindow.addEventListener('click', openModal);
+
+    // ── Set active project ──
+    let currentIndex = 0;
+
+    function setActive(index) {
+      currentIndex = index;
+      const p = PROJECTS[index];
+
+      document.querySelectorAll('.project-list-item').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+      });
+
+      heroThumb.src = p.thumb;
+
+      heroVideo.pause();
+      if (p.preview) {
+        heroVideo.src = p.preview;
+        mediaWindow.style.cursor = 'pointer';
+        if (isHoveringMedia) {
+          heroVideo.load();
+          heroVideo.play().catch(() => {});
+        }
+      } else {
+        heroVideo.src = '';
+        mediaWindow.style.cursor = p.embedSrc ? 'pointer' : 'default';
+        mediaWindow.classList.remove('playing');
+        isHoveringMedia = false;
+      }
+
+      const rows = p.credits.map(([label, val]) =>
+        `<span class="credit-label">${label}</span><span class="credit-value">${val}</span>`
+      ).join('');
+
+      document.getElementById('hero-info').innerHTML = `
+        <div class="hero-title-row">
+          <span class="hero-num">${p.num}</span>
+          <span class="hero-title">${p.title}</span>
+        </div>
+        <div class="hero-credits">${rows}</div>
+        <div class="hero-year">${p.year}</div>
+      `;
+    }
+
+    setActive(0);
+
+    // ── Modal ──
+    function openModal() {
+      const p = PROJECTS[currentIndex];
+      if (!p.embedSrc) return;
+      const wrap = document.getElementById('embed-wrap');
+      wrap.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = p.embedSrc;
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share; accelerometer; gyroscope';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+      iframe.title = p.title;
+      wrap.appendChild(iframe);
+      document.getElementById('modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+      document.body.style.overflow = '';
+      document.getElementById('embed-wrap').innerHTML = '';
+    }
+    function handleModalClick(e) {
+      if (e.target === document.getElementById('modal')) closeModal();
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  </script>
+</body>
+</html>
